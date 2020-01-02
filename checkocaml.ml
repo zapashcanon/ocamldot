@@ -44,7 +44,7 @@ let temp_files_ext = ref "ml"
 let debug = ref false
 
 (** The function used to print progress messages and other information. *)
-let print = ref (fun s -> print_string s ; flush Pervasives.stdout)
+let print = ref (fun s -> print_string s ; flush Stdlib.stdout)
 
 (** [!string_of_bool b] should return a message according to the given boolean.
    Default are yes/no. *)
