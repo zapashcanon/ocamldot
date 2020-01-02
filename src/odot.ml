@@ -23,7 +23,7 @@
 
 (* $Id: odot.ml 134 2005-12-16 10:15:20Z zoggy $ *)
 
-let version = Odot_version.version
+let version = "%%VERSION%%"
 
 type graph_kind = Odot_types.graph_kind = Graph | Digraph
 
