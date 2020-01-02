@@ -23,8 +23,6 @@
 
 (* $Id: odot.ml 134 2005-12-16 10:15:20Z zoggy $ *)
 
-open Odot_types
-
 let version = Odot_version.version
 
 type graph_kind = Odot_types.graph_kind = Graph | Digraph
@@ -60,19 +58,22 @@ and stmt = Odot_types.stmt =
   | Stmt_attr of attr_stmt
   | Stmt_subgraph of subgraph
 
-and subgraph = Odot_types.subgraph =
-  {mutable sub_id: id option; mutable sub_stmt_list: stmt list}
+and subgraph = Odot_types.subgraph = {
+  mutable sub_id : id option;
+  mutable sub_stmt_list : stmt list;
+}
 
-and graph = Odot_types.graph =
-  { mutable strict: bool
-  ; mutable kind: graph_kind
-  ; mutable id: id option
-  ; mutable stmt_list: stmt list }
+and graph = Odot_types.graph = {
+  mutable strict : bool;
+  mutable kind : graph_kind;
+  mutable id : id option;
+  mutable stmt_list : stmt list;
+}
 
 exception Parse_error of int * int
 
 let parse lexbuf =
-  Odot_lexer.line := 0 ;
+  Odot_lexer.line := 0;
   try Odot_parser.graph Odot_lexer.main lexbuf
   with Parsing.Parse_error ->
     let p = lexbuf.Lexing.lex_curr_p in
@@ -83,63 +84,49 @@ let parse_file file =
   let lexbuf = Lexing.from_channel ic in
   try
     let p = parse lexbuf in
-    close_in ic ; p
-  with e -> close_in ic ; raise e
+    close_in ic;
+    p
+  with e ->
+    close_in ic;
+    raise e
 
 let parse_string s = parse (Lexing.from_string s)
 
 let string_of_graph_kind = function Graph -> "graph" | Digraph -> "digraph"
 
 let string_of_id = function
-  | Simple_id s ->
-      s
-  | Html_id s ->
-      Printf.sprintf "<%s>" s
+  | Simple_id s -> s
+  | Html_id s -> Printf.sprintf "<%s>" s
   | Double_quoted_id s ->
       let len = String.length s in
       let b = Buffer.create len in
       for i = 0 to len - 1 do
         match s.[i] with
-        | '"' ->
-            Buffer.add_string b "\\\""
-        | c ->
-            Buffer.add_char b c
-      done ;
+        | '"' -> Buffer.add_string b "\\\""
+        | c -> Buffer.add_char b c
+      done;
       Printf.sprintf "\"%s\"" (Buffer.contents b)
 
 let string_of_attr = function
-  | id, None ->
-      string_of_id id
-  | id, Some v ->
-      Printf.sprintf "%s=%s" (string_of_id id) (string_of_id v)
+  | id, None -> string_of_id id
+  | id, Some v -> Printf.sprintf "%s=%s" (string_of_id id) (string_of_id v)
 
 let string_of_attr_list = function
-  | [] ->
-      ""
-  | l ->
-      Printf.sprintf "[%s]" (String.concat ", " (List.map string_of_attr l))
+  | [] -> ""
+  | l -> Printf.sprintf "[%s]" (String.concat ", " (List.map string_of_attr l))
 
 let string_of_compass_pt = function
-  | N ->
-      "n"
-  | NE ->
-      "ne"
-  | E ->
-      "e"
-  | SE ->
-      "se"
-  | S ->
-      "s"
-  | SW ->
-      "sw"
-  | W ->
-      "w"
-  | NW ->
-      "nw"
+  | N -> "n"
+  | NE -> "ne"
+  | E -> "e"
+  | SE -> "se"
+  | S -> "s"
+  | SW -> "sw"
+  | W -> "w"
+  | NW -> "nw"
 
 let string_of_node_id = function
-  | id, None ->
-      string_of_id id
+  | id, None -> string_of_id id
   | id, Some (id2, None) ->
       Printf.sprintf "%s:%s" (string_of_id id) (string_of_id id2)
   | id, Some (id2, Some c) ->
@@ -147,10 +134,8 @@ let string_of_node_id = function
         (string_of_compass_pt c)
 
 let rec string_of_edge_stmt_point kind = function
-  | Edge_node_id nid ->
-      string_of_node_id nid
-  | Edge_subgraph s ->
-      string_of_subgraph kind s
+  | Edge_node_id nid -> string_of_node_id nid
+  | Edge_subgraph s -> string_of_subgraph kind s
 
 and string_of_edge_stmt kind =
   let sep = match kind with Graph -> "--" | Digraph -> "->" in
@@ -168,12 +153,9 @@ and string_of_edge_stmt kind =
 and string_of_attr_stmt stmt =
   let s, attr =
     match stmt with
-    | Attr_graph l ->
-        ("graph", l)
-    | Attr_node l ->
-        ("node", l)
-    | Attr_edge l ->
-        ("edge", l)
+    | Attr_graph l -> ("graph", l)
+    | Attr_node l -> ("node", l)
+    | Attr_edge l -> ("edge", l)
   in
   Printf.sprintf "%s %s" s (string_of_attr_list attr)
 
@@ -182,12 +164,9 @@ and string_of_stmt kind = function
       Printf.sprintf "%s %s" (string_of_node_id nid) (string_of_attr_list attr)
   | Stmt_equals (id1, id2) ->
       Printf.sprintf "%s=%s" (string_of_id id1) (string_of_id id2)
-  | Stmt_edge s ->
-      string_of_edge_stmt kind s
-  | Stmt_attr s ->
-      string_of_attr_stmt s
-  | Stmt_subgraph g ->
-      string_of_subgraph kind g
+  | Stmt_edge s -> string_of_edge_stmt kind s
+  | Stmt_attr s -> string_of_attr_stmt s
+  | Stmt_subgraph g -> string_of_subgraph kind g
 
 and string_of_stmt_list kind l =
   String.concat "\n"
@@ -196,10 +175,8 @@ and string_of_stmt_list kind l =
 and string_of_subgraph kind g =
   Printf.sprintf "subgraph %s{\n%s\n  }"
     ( match g.sub_id with
-    | None ->
-        ""
-    | Some id ->
-        Printf.sprintf "%s " (string_of_id id) )
+    | None -> ""
+    | Some id -> Printf.sprintf "%s " (string_of_id id) )
     (string_of_stmt_list kind g.sub_stmt_list)
 
 let string_of_graph g =
@@ -207,30 +184,26 @@ let string_of_graph g =
     (if g.strict then "strict " else "")
     (string_of_graph_kind g.kind)
     ( match g.id with
-    | None ->
-        ""
-    | Some id ->
-        Printf.sprintf "%s " (string_of_id id) )
+    | None -> ""
+    | Some id -> Printf.sprintf "%s " (string_of_id id) )
     (string_of_stmt_list g.kind g.stmt_list)
 
 let print oc p = output_string oc (string_of_graph p)
 
 let print_file f p =
   let oc = open_out f in
-  print oc p ; close_out oc
+  print oc p;
+  close_out oc
 
 let attr_value id l = try List.assoc id l with Not_found -> None
 
 let node_id ?port ?comp id =
   match port with
-  | None ->
-      (id, None)
+  | None -> (id, None)
   | Some p -> (
-    match comp with
-    | None ->
-        (id, Some (p, None))
-    | Some c ->
-        (id, Some (p, Some c)) )
+      match comp with
+      | None -> (id, Some (p, None))
+      | Some c -> (id, Some (p, Some c)) )
 
 let simple_node_id s = node_id (Simple_id s)
 

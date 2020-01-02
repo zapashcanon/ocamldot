@@ -26,7 +26,7 @@
 open Odot_parser
 
 
-let print_DEBUG s = () (*prerr_endline*)
+let print_DEBUG _ = () (*prerr_endline*)
 
 let line = ref 0
 

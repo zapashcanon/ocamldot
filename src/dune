@@ -1,0 +1,18 @@
+(library
+ (name odot)
+ (public_name odot)
+ (modules odot odot_lexer odot_parser odot_types odot_version)
+ (modules_without_implementation odot_types)
+ (wrapped false))
+
+(library
+ (name odot_gtk)
+ (modules odot_gtk)
+ (wrapped false)
+ (libraries lablgtk2 odot))
+
+(ocamllex
+ (modules odot_lexer))
+
+(ocamlyacc
+ (modules odot_parser))
